@@ -1,0 +1,5 @@
+.next
+.tools
+node_modules
+.vercel-login.*
+docs

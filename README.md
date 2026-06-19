@@ -1,0 +1,88 @@
+# WorkMatch AI
+
+WorkMatch AI is a Next.js app for workforce matching, staffing recommendations, skill-gap visibility, import review, and manager-approved staffing decisions.
+
+The current implementation runs with local in-memory fallback data when provider accounts are not configured. When Supabase is configured, employees, tasks, assignments, imports, settings, audit events, agent runs, and monitoring events persist through server-side API routes.
+
+## Run Locally
+
+Prerequisite: Node.js with `npm` available on PATH.
+
+```powershell
+npm ci
+npm run dev
+```
+
+Then open the local URL printed by Next.js, usually `http://localhost:3000`.
+
+Use `npm install` instead when intentionally adding or updating dependencies.
+
+## Verify
+
+Use the shared verification command before handing work back:
+
+```powershell
+npm run verify
+```
+
+This runs lint, TypeScript checking, and a production build.
+
+## Demo Data
+
+Sample CSV files are available for the import flow:
+
+- `sample-data/employees.csv`
+- `sample-data/tasks.csv`
+
+The app also starts with equivalent mock data in `lib/mock-data.ts` so the dashboard is populated immediately.
+
+## Multi-Agent Setup
+
+The active demo execution board is [docs/DEMO_AGENTIC_EXECUTION_BOARD.md](docs/DEMO_AGENTIC_EXECUTION_BOARD.md).
+
+Use [docs/MULTI_AGENT_INITIAL_SETUP.md](docs/MULTI_AGENT_INITIAL_SETUP.md) as the command-center runbook for finishing the initial demo setup with parallel agents.
+
+Use [docs/PRODUCTION_GAP_MULTI_AGENT_SETUP.md](docs/PRODUCTION_GAP_MULTI_AGENT_SETUP.md) for the next multi-agent pass that finishes document parsing, live AI routes, persistence, roster import, exact match labels, and settings wiring.
+
+Reusable worker prompts are in [docs/AGENT_BRIEFS.md](docs/AGENT_BRIEFS.md).
+
+The prioritized setup gap matrix is in [docs/INITIAL_SETUP_GAP_MATRIX.md](docs/INITIAL_SETUP_GAP_MATRIX.md).
+
+## Current Notes
+
+- CSV, Excel `.xlsx`, Word `.docx`, and selectable-text PDF import are implemented.
+- Google Workspace intake is disabled. The future cloud-document path should be Microsoft 365 / Microsoft Graph.
+- Matching scores are deterministic in `lib/workmatch.ts`.
+- AI routes use the selected provider switch: `AI_PROVIDER=gemini` for the demo-friendly Gemini path, or `AI_PROVIDER=openai` for GPT/OpenAI. Settings can override the provider per organization without exposing API keys.
+- Production monitoring tracks estimated AI cost, fallback rate, parser failures, and route errors.
+- This folder is now initialized as a Git repository.
+- This shell does not have `npm` available on PATH, and the local `.cmd` launchers can fail with `Access is denied`. Verification can still be run in this Codex environment by invoking the bundled Node executable directly against each tool entrypoint.
+
+Normal machine workflow:
+
+```powershell
+cd C:\Users\anish.jami\Desktop\receipt-proj\WorkMatch
+node --version
+npm --version
+npm ci
+npm run verify
+```
+
+Use `npm run dev` after `npm run verify` passes if you need a browser smoke test.
+
+Demo AI provider switch:
+
+```powershell
+AI_PROVIDER="gemini"
+GEMINI_API_KEY="..."
+GEMINI_MODEL="gemini-2.5-flash"
+```
+
+Codex shell workaround used during this setup pass:
+
+```powershell
+C:\Users\anish.jami\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe .\node_modules\typescript\bin\tsc --noEmit
+C:\Users\anish.jami\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe .\node_modules\eslint\bin\eslint.js .
+C:\Users\anish.jami\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe .\node_modules\next\dist\bin\next build
+```
+

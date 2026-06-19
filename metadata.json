@@ -1,0 +1,7 @@
+{
+  "name": "WorkMatch AI",
+  "description": "An AI workforce matching tool for HR managers and project leads, featuring employee profiles, project tracking, AI staffing recommendations, and seamless data import capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
