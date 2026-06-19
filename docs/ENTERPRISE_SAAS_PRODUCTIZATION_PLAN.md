@@ -16,6 +16,7 @@ The project should no longer read as a company-specific demo. It should read as 
 - Auditable AI and manager actions.
 - Human approval before imports, skill ratings, staffing assignments, or bulk changes.
 - RAG-backed copilot with citations.
+- Integrations with the tools companies already use for projects, docs, spreadsheets, HR data, and capacity planning.
 - Cost, fallback, and model-run monitoring.
 - Production deployment with a clear demo tenant.
 
@@ -31,6 +32,7 @@ Use this stack for the public SaaS version:
 | File storage | Supabase Storage first | Keeps private workforce documents close to tenant-aware Postgres policies and source metadata. |
 | Vector search / RAG | pgvector in Supabase Postgres | Cheap and simple first RAG layer; avoids a separate vector database until scale demands one. |
 | AI runtime | Current agent routes plus Vercel AI SDK / AI Gateway migration | Existing agent contracts are valuable; AI SDK adds streaming, tool calling, gateway observability, and human approval patterns. |
+| Integrations | Connector framework with OAuth, sync jobs, source records, and field mapping | Makes WorkMatch the AI layer over existing systems instead of another manual data silo. |
 | Rate limiting / queues | Start with current in-memory/server route limits; add Upstash Redis when public traffic starts | Keeps early cost low while leaving a clean path to durable rate limits and background jobs. |
 | Billing | Defer paid billing until tenant onboarding works; add Stripe or Clerk Billing later | Signup and product quality matter first. Billing becomes a portfolio bonus once the core workflow is solid. |
 
@@ -101,6 +103,12 @@ Build these in priority order:
    - Parser failure rate.
    - Audit trail for approvals and settings changes.
 
+6. Integration hub
+   - Connect Google Sheets, Notion, ClickUp, Jira, Linear, Asana, monday.com, Microsoft 365, and selected HRIS systems over time.
+   - Normalize external records into WorkMatch employees, tasks, assignments, source documents, and skill evidence.
+   - Use connected data for RAG and matching while keeping writes approval-gated.
+   - See `docs/INTEGRATIONS_STRATEGY.md` for the connector architecture.
+
 ## Portfolio Signals To Highlight
 
 The public README and portfolio writeup should explicitly call out:
@@ -156,7 +164,17 @@ Acceptance:
 - Add tenant-filtered vector retrieval function.
 - Add source citations to copilot answers.
 
-### Wave 5 - Agentic Copilot Upgrade
+### Wave 5 - Integration Hub
+
+Acceptance:
+
+- Add connector registry and admin integrations page.
+- Add first cloud connectors for Google Sheets, Notion, and ClickUp.
+- Add source record tracking and field mapping.
+- Add manual sync with sync health reporting.
+- Feed synced documents and structured records into RAG/review flows.
+
+### Wave 6 - Agentic Copilot Upgrade
 
 Acceptance:
 
@@ -166,7 +184,7 @@ Acceptance:
 - Persist tool calls and agent runs.
 - Add cost and fallback monitoring.
 
-### Wave 6 - Enterprise Dashboard Polish
+### Wave 7 - Enterprise Dashboard Polish
 
 Acceptance:
 
