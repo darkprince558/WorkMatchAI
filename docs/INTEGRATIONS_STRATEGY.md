@@ -86,6 +86,80 @@ Add once the app is ready for real organizations:
    - Google Calendar and Outlook Calendar can provide capacity signals.
    - Do not treat calendar load as authoritative availability without manager review.
 
+## Connector Platform Shortlist
+
+We should not hand-build every OAuth flow, token refresh path, webhook parser, retry loop, and provider SDK from scratch. Use a connector platform where it speeds us up, but keep WorkMatch's canonical data model, tenant isolation, review workflow, and AI governance in our own app.
+
+### Best Fit For WorkMatch
+
+Start with **Nango** as the likely default integration layer.
+
+Why:
+
+- It is designed for product integrations where the app still owns code.
+- It handles OAuth, API keys, token refresh, credential storage, retries, rate limits, observability, environments, and tenant isolation.
+- It supports many APIs while letting us write TypeScript integration functions that map data into WorkMatch records.
+- It can expose selected actions as agent tools through schemas/MCP, which fits the WorkMatch AI copilot roadmap.
+- It can be cloud-hosted first and self-hosted later if enterprise customers require it.
+
+Use Nango for:
+
+- Google Sheets, Notion, ClickUp, Jira, Linear, Asana, Slack, Microsoft 365, and similar SaaS connectors.
+- Scheduled syncs.
+- Webhooks.
+- Provider-specific reads and actions.
+- Approval-gated writeback actions.
+
+### Strong Alternatives
+
+| Tool | Best For | Pros | Cons |
+| --- | --- | --- | --- |
+| Nango | Code-owned SaaS product integrations | Open-source/self-hostable path, auth/runtime handled, TypeScript functions, agent/MCP fit | We still implement mappings and connector functions |
+| Merge.dev | Unified APIs for HRIS, ATS, ticketing, CRM, file storage, knowledge base, chat | Very polished unified models and enterprise credibility | Paid/vendor-heavy; less code ownership; may be expensive early |
+| Apideck | Unified APIs across HRIS, CRM, file storage, issue tracking, accounting, ecommerce | Broad unified API coverage and maintained connectors | Paid/vendor-heavy; still need WorkMatch mapping; not open source |
+| StackOne | AI integration gateway and agent actions | Agent-first, many actions, unified auth, MCP/A2A support, strong for tool calling | Newer/agent-oriented; pricing and lock-in need review before committing |
+| Composio | Agent tool access across many apps | Very strong for AI agents, toolkits, per-user sessions, triggers | More agent-tool focused than durable product sync layer |
+| Paragon | Embedded SaaS integrations for B2B products | Polished connect portal, managed sync, workflows, observability, enterprise hosting options | Usually a commercial platform; can be overkill/costly for early MVP |
+| Pipedream Connect | Fast customer-facing integrations and workflows | Huge app ecosystem, managed auth, source-available components, strong prototyping | Workflow/runtime platform more than canonical product sync layer |
+| Activepieces | Open-source automation and no-code workflows | Self-hostable, TypeScript pieces, AI-ready, human-in-loop patterns | Better as automation layer than embedded tenant sync backbone |
+| n8n | Self-hosted workflow automation | Mature workflow automation, many integrations, good internal automation | Harder to make feel like native embedded SaaS product UX |
+| Airbyte | Data replication into Postgres/warehouse | Great for bulk ETL and hundreds of data sources | Better for pipelines than user-facing OAuth/product actions |
+| Meltano | Open-source ELT with many connectors | Full control, self-hosted, many connectors | Data-engineering heavy; less ideal for interactive SaaS integrations |
+
+### Recommended Architecture Choice
+
+Use a two-lane strategy:
+
+1. **Native embedded integrations lane**
+   - Use Nango for OAuth, credentials, sync runtime, webhooks, and provider API calls.
+   - Store normalized WorkMatch records in our own Supabase tables.
+   - Store source references and external IDs in `external_records`.
+   - Feed documents and comments into RAG.
+   - Keep field mapping, review gates, and writeback approval inside WorkMatch.
+
+2. **Bulk data / enterprise ETL lane**
+   - Use Airbyte or Meltano only when a customer needs large historical replication or data-warehouse style ingestion.
+   - Load raw snapshots into staging tables.
+   - Normalize into WorkMatch review records after import.
+
+This lets us move fast without creating a fragile black box. WorkMatch owns the product intelligence; connector platforms handle the repetitive integration plumbing.
+
+### What Still Must Be Built By Us
+
+Even with Nango, Merge, Apideck, or StackOne, WorkMatch still needs its own:
+
+- Canonical workforce data model.
+- Field mapping UI.
+- Import review and conflict resolution.
+- Tenant-scoped RAG indexing.
+- Source citation model.
+- Assignment approval workflow.
+- Audit trail.
+- AI cost/fallback monitoring.
+- Permission model for who can connect, sync, approve, and write back.
+
+Connector platforms reduce integration plumbing. They do not replace the actual WorkMatch product.
+
 ## Architecture
 
 Use a connector framework rather than one-off integrations.
