@@ -50,6 +50,8 @@ Reusable worker prompts are in [docs/AGENT_BRIEFS.md](docs/AGENT_BRIEFS.md).
 
 The prioritized setup gap matrix is in [docs/INITIAL_SETUP_GAP_MATRIX.md](docs/INITIAL_SETUP_GAP_MATRIX.md).
 
+The current product readiness audit and execution plan is in [docs/PRODUCT_READINESS_AUDIT_2026-06-19.md](docs/PRODUCT_READINESS_AUDIT_2026-06-19.md).
+
 ## Current Notes
 
 - CSV, Excel `.xlsx`, Word `.docx`, and selectable-text PDF import are implemented.
