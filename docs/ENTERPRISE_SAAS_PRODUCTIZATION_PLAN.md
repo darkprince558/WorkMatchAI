@@ -1,14 +1,14 @@
 # WorkMatch AI Enterprise SaaS Productization Plan
 
-Status: stack decision and execution plan
-Audience: portfolio-grade public SaaS launch
-Goal: make WorkMatch AI feel credible for real organizations while keeping monthly cost low during early adoption.
+Status: portfolio-first architecture plan
+Audience: resume project with an enterprise-ready growth path
+Goal: make WorkMatch AI demonstrate credible enterprise SaaS architecture while keeping actual operating costs low until real validation exists.
 
 ## Product Direction
 
-WorkMatch AI should become a multi-tenant workforce intelligence SaaS for organizations that need to import employee/project data, match people to work, explain staffing recommendations, and ask an AI copilot questions over trusted workforce context.
+WorkMatch AI should be positioned first as a strong portfolio project that can credibly grow into a multi-tenant workforce intelligence SaaS. The architecture should show how organizations could import employee/project data, match people to work, explain staffing recommendations, and ask an AI copilot questions over trusted workforce context.
 
-The project should no longer read as a company-specific demo. It should read as a standalone SaaS product with enterprise patterns:
+The project should no longer read as a company-specific demo. It should read as a standalone portfolio product with enterprise patterns:
 
 - Organization accounts and member invitations.
 - Role-based permissions.
@@ -22,11 +22,11 @@ The project should no longer read as a company-specific demo. It should read as 
 
 ## Recommended Stack
 
-Use this stack for the public SaaS version:
+Use this stack as the enterprise-ready target architecture, but only turn on paid tiers when the portfolio demo or real validation justifies them:
 
 | Layer | Choice | Why |
 | --- | --- | --- |
-| Hosting | Vercel Pro for public/commercial launch | Professional deployment, spend limits, WAF/CDN, logs, previews, and easy portfolio sharing. |
+| Hosting | Vercel Hobby for portfolio demo; Vercel Pro only for commercial launch | Professional deployment path without paying before validation. |
 | Auth and organizations | Clerk Organizations | Strong B2B SaaS feel: organization switcher, invitations, roles, polished sign-in/sign-up, and future enterprise SSO path. |
 | Database | Supabase Postgres | Existing schema already targets Supabase. Postgres is credible, relational, and works well for tenant-scoped workforce data. |
 | File storage | Supabase Storage first | Keeps private workforce documents close to tenant-aware Postgres policies and source metadata. |
@@ -34,7 +34,19 @@ Use this stack for the public SaaS version:
 | AI runtime | Current agent routes plus Vercel AI SDK / AI Gateway migration | Existing agent contracts are valuable; AI SDK adds streaming, tool calling, gateway observability, and human approval patterns. |
 | Integrations | Connector framework with OAuth, sync jobs, source records, and field mapping | Makes WorkMatch the AI layer over existing systems instead of another manual data silo. |
 | Rate limiting / queues | Start with current in-memory/server route limits; add Upstash Redis when public traffic starts | Keeps early cost low while leaving a clean path to durable rate limits and background jobs. |
-| Billing | Defer paid billing until tenant onboarding works; add Stripe or Clerk Billing later | Signup and product quality matter first. Billing becomes a portfolio bonus once the core workflow is solid. |
+| Billing | Defer paid billing; document Stripe or Clerk Billing as a later path | Product quality and portfolio clarity matter first. Billing becomes optional proof of enterprise readiness. |
+
+## Positioning Decision
+
+Treat WorkMatch AI as a resume project with enterprise architecture, not an active commercial SaaS until there is real user demand.
+
+This means:
+
+- Keep the product polished and credible enough to show publicly.
+- Avoid recurring paid services unless they materially improve the demo or portfolio story.
+- Prefer free tiers, mock providers, deterministic fallback, and documented setup paths.
+- Build the core architecture so a future enterprise move is straightforward.
+- Validate demand before committing to expensive connector platforms, higher auth tiers, paid observability, or production SLAs.
 
 ## Why This Beats A Hobby Stack
 
@@ -48,13 +60,14 @@ This stack makes the project look like a real B2B SaaS without requiring an expe
 
 ## Cost Posture
 
-Start with the lowest paid tier only where public/commercial use or product polish requires it:
+Start with the lowest-cost version that still tells a strong engineering story:
 
-- Use Vercel Hobby only during private development. Move to Vercel Pro before letting real organizations use it commercially.
-- Use Clerk free/Hobby during build. Move to Clerk Pro before public launch if removing Clerk branding and MFA matters for the enterprise feel.
+- Use Vercel Hobby for portfolio hosting unless commercial use begins.
+- Use Clerk free/Hobby during build. Move to Clerk Pro only if branding, MFA, or org limits become a blocker.
 - Use Supabase free or low-tier project for development and demo tenants. Move up only when database size, uptime, or support needs justify it.
 - Keep RAG in Postgres with pgvector first. Do not add Pinecone/Qdrant until vector volume or latency proves the need.
 - Keep AI features behind explicit per-organization limits and deterministic fallback.
+- Keep connector tools on free tiers or mocked flows until the integration demo requires live OAuth.
 
 ## Tenant Model
 

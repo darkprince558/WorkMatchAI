@@ -1,6 +1,8 @@
 # WorkMatch AI
 
-WorkMatch AI is a Next.js app for workforce matching, staffing recommendations, skill-gap visibility, import review, and manager-approved staffing decisions.
+WorkMatch AI is a portfolio-grade Next.js project for workforce matching, staffing recommendations, skill-gap visibility, import review, and manager-approved staffing decisions.
+
+The goal is to demonstrate production-minded AI SaaS architecture without taking on unnecessary operating cost. The app is built as a resume project first, with a clear path toward enterprise readiness through multi-tenant data boundaries, structured AI agent outputs, auditability, RAG-ready document workflows, and future integrations with tools like Google Sheets, Notion, ClickUp, Jira, and Microsoft 365.
 
 The current implementation runs with local in-memory fallback data when provider accounts are not configured. When Supabase is configured, employees, tasks, assignments, imports, settings, audit events, agent runs, and monitoring events persist through server-side API routes.
 
@@ -55,6 +57,7 @@ The prioritized setup gap matrix is in [docs/INITIAL_SETUP_GAP_MATRIX.md](docs/I
 - Matching scores are deterministic in `lib/workmatch.ts`.
 - AI routes use the selected provider switch: `AI_PROVIDER=gemini` for the demo-friendly Gemini path, or `AI_PROVIDER=openai` for GPT/OpenAI. Settings can override the provider per organization without exposing API keys.
 - Production monitoring tracks estimated AI cost, fallback rate, parser failures, and route errors.
+- Enterprise SaaS plans are documented for credibility, but costs should stay portfolio-sized until real user validation.
 - This folder is now initialized as a Git repository.
 - This shell does not have `npm` available on PATH, and the local `.cmd` launchers can fail with `Access is denied`. Verification can still be run in this Codex environment by invoking the bundled Node executable directly against each tool entrypoint.
 
