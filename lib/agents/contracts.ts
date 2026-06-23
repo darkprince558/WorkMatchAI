@@ -28,6 +28,24 @@ export interface SourceRef {
   };
 }
 
+export const READ_ONLY_AGENT_TOOL_NAMES = [
+  'search_employees',
+  'search_tasks',
+  'score_matches',
+  'list_recent_imports',
+  'lookup_document_chunks',
+] as const;
+
+export type ReadOnlyAgentToolName = (typeof READ_ONLY_AGENT_TOOL_NAMES)[number];
+
+export interface AgentToolResult<TOutput = unknown> {
+  toolCallId: string;
+  toolName: ReadOnlyAgentToolName;
+  resultRef: string;
+  sourceRefs: SourceRef[];
+  output: TOutput;
+}
+
 export type AgentWarningSeverity = 'info' | 'warning' | 'blocking';
 
 export interface AgentWarning {
@@ -386,6 +404,7 @@ export interface ManagerCopilotInput {
   userQuestion: string;
   allowedActions: Array<'read' | 'recommend' | 'draft_review' | 'submit_review'>;
   contextRefs?: SourceRef[];
+  toolResults?: AgentToolResult[];
   deterministicScores?: DeterministicMatchScore[];
 }
 

@@ -4,6 +4,12 @@ Owner: Google Workspace Agent
 
 Scope: `lib/google-workspace/*` creates connector/OAuth adapter contracts for Google Docs and Google Sheets. The adapters do not fetch from Google directly and do not write employee, task, roster, or assignment data. They accept content supplied by a connector or an OAuth/service-account route, transform it through the shared document extraction proposal model, and return `ImportReviewRecord[]` for manager review.
 
+## Status Update - 2026-06-23
+
+- First live-ish Sheets intake is implemented in `lib/imports/google-sheets.ts` and `POST /api/google-workspace/intake`.
+- The route accepts connector-provided or posted rows, tabs, and ranges, normalizes friendly Google Sheets headers, and returns `reviewRecords` plus preview validation.
+- It does not fetch Google APIs or implement OAuth/service-account access yet; local CSV/XLSX/PDF/Word import remains separate.
+
 ## Adapter Contract
 
 - `googleDocsContentToImportReviewRecords(document, options)` accepts a fetched Google Doc payload with table rows or a prebuilt `DocumentExtractionAssistanceOutput`.

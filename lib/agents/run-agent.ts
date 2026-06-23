@@ -2,6 +2,7 @@ import type {
   AgentName,
   AgentOutputEnvelope,
   AgentStatus,
+  AgentToolResult,
   AgentWarning,
   DashboardInsightsInput,
   DocumentExtractionAssistanceInput,
@@ -74,6 +75,8 @@ export async function runWorkMatchAgent(
   const client = createAgentModelClient({ provider: options.aiProvider });
   const request = buildRequest(agentName, input);
   const organizationId = resolveOrganizationId(input, options.organizationId);
+  const toolCallCount = countInputToolResults(agentName, input);
+  const deterministicScoreUsed = inputUsesDeterministicScores(agentName, input);
 
   if (!client.configured) {
     const envelope = createFallback(agentName, input, {
@@ -82,6 +85,7 @@ export async function runWorkMatchAgent(
       modelProvider: client.provider,
       modelName: client.model,
       promptVersion: request.promptVersion,
+      toolCallCount,
     });
     await logRun(envelope, input, startedAt, organizationId, options.triggeredByUserId);
     return envelope;
@@ -120,7 +124,8 @@ export async function runWorkMatchAgent(
         modelVersion: client.lastModelVersion,
         promptVersion: request.promptVersion,
         fallbackUsed: false,
-        deterministicScoreUsed: agentName === 'match_explanation',
+        deterministicScoreUsed,
+        toolCallCount,
       },
     });
 
@@ -139,6 +144,7 @@ export async function runWorkMatchAgent(
       modelVersion: client.lastModelVersion,
       promptVersion: request.promptVersion,
       warnings: error instanceof AgentOutputError ? error.warnings : undefined,
+      toolCallCount,
     });
     await logRun(envelope, input, startedAt, organizationId, options.triggeredByUserId, {
       errorCode: 'AGENT_MODEL_RUN_FAILED',
@@ -205,6 +211,7 @@ function createFallback(
     modelVersion?: string;
     promptVersion?: string;
     warnings?: AgentWarning[];
+    toolCallCount?: number;
   }
 ) {
   const output = finalizeOutput(agentName, input, buildFallback(agentName, input));
@@ -221,7 +228,8 @@ function createFallback(
       modelName: options.modelName,
       modelVersion: options.modelVersion,
       promptVersion: options.promptVersion,
-      deterministicScoreUsed: agentName === 'match_explanation',
+      deterministicScoreUsed: inputUsesDeterministicScores(agentName, input),
+      toolCallCount: options.toolCallCount,
     },
   });
 }
@@ -274,9 +282,52 @@ function buildInputRefs(agentName: AgentName, input: unknown): SourceRef[] {
       return [
         { sourceType: 'manager_input', sourceId: value.conversationId, recordId: value.messageId },
         ...(value.contextRefs ?? []),
+        ...buildToolResultInputRefs(value.toolResults),
       ];
     }
   }
+}
+
+function buildToolResultInputRefs(toolResults: AgentToolResult[] | undefined): SourceRef[] {
+  if (!toolResults?.length) return [];
+
+  return dedupeSourceRefs(
+    toolResults.flatMap((result) => {
+      const toolResultRef: SourceRef = { sourceType: 'tool_result', sourceId: result.toolName, recordId: result.resultRef };
+      return [toolResultRef, ...(result.sourceRefs ?? [])];
+    })
+  );
+}
+
+function countInputToolResults(agentName: AgentName, input: unknown) {
+  if (agentName !== 'manager_copilot') return 0;
+  const toolResults = (input as ManagerCopilotInput).toolResults;
+  return Array.isArray(toolResults) ? toolResults.length : 0;
+}
+
+function inputUsesDeterministicScores(agentName: AgentName, input: unknown) {
+  if (agentName === 'match_explanation') return true;
+  if (agentName !== 'manager_copilot') return false;
+
+  const value = input as ManagerCopilotInput;
+  return Boolean(
+    value.deterministicScores?.length ||
+      value.toolResults?.some((result) => result.toolName === 'score_matches')
+  );
+}
+
+function dedupeSourceRefs(refs: SourceRef[]) {
+  const seen = new Set<string>();
+  const output: SourceRef[] = [];
+
+  refs.forEach((ref) => {
+    const key = JSON.stringify(ref);
+    if (seen.has(key)) return;
+    seen.add(key);
+    output.push(ref);
+  });
+
+  return output;
 }
 
 function buildReviewCheckpoints(agentName: AgentName, output: unknown): ReviewCheckpoint[] {

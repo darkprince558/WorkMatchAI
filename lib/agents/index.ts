@@ -9,4 +9,5 @@ export * from './requests';
 export * from './run-agent';
 export * from './schema-utils';
 export * from './schemas';
+export * from './tools';
 export * from './validation';
