@@ -1,5 +1,6 @@
 # AI Routes Implementation Plan
 
+Status: historical implementation plan. Current agent capability status is summarized in `docs/PRODUCT_READINESS_AUDIT_2026-06-19.md`.
 Last updated: June 10, 2026
 
 Owner: AI Routes Agent

@@ -1,5 +1,6 @@
 # WorkMatch Production Gap Multi-Agent Setup
 
+Status: historical production-gap runbook. Current sprint priorities are in `docs/PRODUCT_READINESS_AUDIT_2026-06-19.md`.
 This runbook turns the known "planned only" gaps into a coordinated multi-agent implementation pass.
 
 Use this after the demo milestone. The goal is to move WorkMatch AI from a browser-side approval demo toward a production-capable internal workforce planning app while preserving the current working demo path.

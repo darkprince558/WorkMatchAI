@@ -1,5 +1,6 @@
 # Initial Setup Gap Matrix
 
+Status: historical gap matrix from the initial demo-readiness pass.
 This matrix combines the first parallel sub-agent audits. Use it to assign the next implementation pass.
 
 This file reflects the initial demo-readiness pass. For the post-demo production gaps covering expanded document parsing, live AI routes, persistence, roster import, exact match labels, and settings wiring, use `docs/PRODUCTION_GAP_MULTI_AGENT_SETUP.md`.

@@ -1,5 +1,6 @@
 # WorkMatch AI Manual Setup Checklist
 
+Status: setup reference, not the current sprint source of truth. Confirm current environment expectations against `README.md` and `docs/PRODUCTION_RUNTIME_BASELINE.md`.
 Date: 2026-06-12
 
 Purpose: this is the manual setup list for making the AI, auth, import, and deployment parts of WorkMatch work with real provider accounts instead of local fallbacks.

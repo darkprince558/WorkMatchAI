@@ -1,5 +1,6 @@
 # WorkMatch Multi-Agent Initial Setup
 
+Status: historical initial setup runbook. It is retained for context, not for current task assignment.
 This runbook turns the existing WorkMatch AI plan into an executable multi-agent setup for finishing the first demo-ready milestone.
 
 For the active June 10, 2026 demo pass, use `docs/DEMO_AGENTIC_EXECUTION_BOARD.md` as the live execution board.

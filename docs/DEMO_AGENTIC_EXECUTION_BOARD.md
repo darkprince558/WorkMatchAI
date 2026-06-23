@@ -1,5 +1,6 @@
 # WorkMatch Demo Agentic Execution Board
 
+Status: historical demo coordination board. Do not use as the active execution board for current work.
 Target demo date: Wednesday, June 10, 2026.
 
 This board coordinates the active multi-agent pass for making WorkMatch AI demo-ready. The goal is a credible manager approval demo, not a production release.

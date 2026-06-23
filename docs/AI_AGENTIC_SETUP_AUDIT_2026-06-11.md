@@ -1,5 +1,6 @@
 # WorkMatch AI Agentic Setup Audit
 
+Status: historical audit, superseded by `docs/PRODUCT_READINESS_AUDIT_2026-06-19.md` for current priorities.
 Date: 2026-06-11  
 Scope: Current AI/agentic implementation, provider readiness, account setup, missing capabilities, and recommended implementation plan.
 
@@ -819,4 +820,3 @@ Official docs consulted:
 - Google Drive API scopes: https://developers.google.com/workspace/drive/api/guides/api-specific-auth
 - Google Docs API authorization scopes: https://developers.google.com/workspace/docs/api/auth
 - Google Sheets API authorization scopes: https://developers.google.com/workspace/sheets/api/scopes
-

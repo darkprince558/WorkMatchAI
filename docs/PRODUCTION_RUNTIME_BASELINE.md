@@ -1,6 +1,6 @@
 # WorkMatch Production Runtime Baseline
 
-Status: foundation baseline for the production gap pass
+Status: historical runtime baseline for the production gap pass
 Owner: Foundation Agent
 Last updated: 2026-06-10
 

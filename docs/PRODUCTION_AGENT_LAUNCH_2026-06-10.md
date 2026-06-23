@@ -1,6 +1,6 @@
 # Production Agent Launch - 2026-06-10
 
-Status: started
+Status: historical launch note
 
 This note records the first production-gap multi-agent launch.
 

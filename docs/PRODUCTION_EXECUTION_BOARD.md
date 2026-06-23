@@ -1,5 +1,6 @@
 # WorkMatch Production Execution Board
 
+Status: historical production-gap coordination board. Use `docs/PRODUCT_READINESS_AUDIT_2026-06-19.md` for the current execution order.
 Last updated: June 10, 2026
 
 Source of truth: `docs/PRODUCTION_GAP_MULTI_AGENT_SETUP.md`

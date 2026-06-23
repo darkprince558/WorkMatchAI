@@ -1,5 +1,6 @@
 # WorkMatch AI Features Implementation Status
 
+Status: historical implementation snapshot. Use `docs/PRODUCT_READINESS_AUDIT_2026-06-19.md` and `README.md` for current capability claims.
 Date: 2026-06-11
 
 Manual setup checklist: `docs/AI_MANUAL_SETUP_CHECKLIST_2026-06-12.md`

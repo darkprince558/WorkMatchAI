@@ -8,6 +8,8 @@
     "start": "next start",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",
+    "verify:supabase": "tsx scripts/verify-supabase-mode.ts",
+    "verify:supabase:dry-run": "tsx scripts/verify-supabase-mode.ts --dry-run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",

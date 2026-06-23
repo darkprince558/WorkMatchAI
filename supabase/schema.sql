@@ -2,6 +2,7 @@
 -- Run this in a Supabase project before enabling persistent production data.
 
 create extension if not exists "pgcrypto";
+create extension if not exists "vector";
 
 create or replace function workmatch_touch_updated_at()
 returns trigger
@@ -177,6 +178,63 @@ create table if not exists imported_records (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists source_documents (
+  id text primary key default gen_random_uuid()::text,
+  organization_id text not null references organizations(id) on delete cascade,
+  import_id text references imports(id) on delete set null,
+  imported_record_id text references imported_records(id) on delete set null,
+  source_type text not null default 'upload' check (source_type in ('upload', 'google_drive', 'sharepoint', 'notion', 'manual', 'import', 'sample_data', 'api')),
+  title text,
+  file_name text not null,
+  mime_type text,
+  size_bytes bigint check (size_bytes is null or size_bytes >= 0),
+  storage_path text,
+  source_uri text,
+  target_type text check (target_type in ('employee', 'task', 'import', 'organization')),
+  target_id text,
+  status text not null default 'uploaded' check (status in ('uploaded', 'parsed', 'chunked', 'embedding_pending', 'embedded', 'failed')),
+  parser text,
+  parser_version text,
+  parser_confidence numeric(5,4) check (parser_confidence is null or (parser_confidence >= 0 and parser_confidence <= 1)),
+  content_hash text,
+  chunk_count integer not null default 0 check (chunk_count >= 0),
+  metadata jsonb not null default '{}'::jsonb,
+  error_message text,
+  created_by_user_id text,
+  updated_by_user_id text,
+  processed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (organization_id, id)
+);
+
+create table if not exists document_chunks (
+  id text primary key default gen_random_uuid()::text,
+  organization_id text not null references organizations(id) on delete cascade,
+  source_document_id text not null,
+  chunk_index integer not null check (chunk_index >= 0),
+  content text not null check (length(content) > 0),
+  content_hash text not null,
+  content_char_start integer not null check (content_char_start >= 0),
+  content_char_end integer not null check (content_char_end >= content_char_start),
+  token_count integer not null default 0 check (token_count >= 0),
+  page_number integer check (page_number is null or page_number >= 1),
+  section_title text,
+  parser_confidence numeric(5,4) check (parser_confidence is null or (parser_confidence >= 0 and parser_confidence <= 1)),
+  metadata jsonb not null default '{}'::jsonb,
+  embedding_status text not null default 'pending' check (embedding_status in ('pending', 'embedded', 'skipped', 'failed')),
+  embedding_model text,
+  embedding_dimensions integer check (embedding_dimensions is null or embedding_dimensions > 0),
+  embedding vector,
+  embedded_at timestamptz,
+  embedding_error text,
+  search_vector tsvector generated always as (to_tsvector('english', content)) stored,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  foreign key (organization_id, source_document_id) references source_documents(organization_id, id) on delete cascade,
+  unique (organization_id, source_document_id, chunk_index)
+);
+
 create table if not exists assignments (
   id text primary key default gen_random_uuid()::text,
   organization_id text not null references organizations(id) on delete cascade,
@@ -350,6 +408,12 @@ create index if not exists employees_org_idx on employees (organization_id);
 create index if not exists tasks_org_idx on tasks (organization_id);
 create index if not exists assignments_org_task_idx on assignments (organization_id, task_id);
 create index if not exists imports_org_idx on imports (organization_id, created_at desc);
+create index if not exists source_documents_org_idx on source_documents (organization_id, created_at desc);
+create unique index if not exists source_documents_org_storage_path_idx on source_documents (organization_id, storage_path) where storage_path is not null;
+create index if not exists source_documents_org_target_idx on source_documents (organization_id, target_type, target_id) where target_type is not null and target_id is not null;
+create index if not exists document_chunks_org_document_idx on document_chunks (organization_id, source_document_id, chunk_index);
+create index if not exists document_chunks_org_hash_idx on document_chunks (organization_id, content_hash);
+create index if not exists document_chunks_search_idx on document_chunks using gin (search_vector);
 create index if not exists agent_runs_org_idx on agent_runs (organization_id, created_at desc);
 create index if not exists monitoring_events_org_idx on monitoring_events (organization_id, created_at desc);
 create index if not exists rate_limit_buckets_reset_idx on rate_limit_buckets (reset_at);
@@ -365,6 +429,8 @@ begin
     'tasks',
     'imports',
     'imported_records',
+    'source_documents',
+    'document_chunks',
     'assignments',
     'settings',
     'agent_runs',
@@ -386,6 +452,8 @@ alter table employees enable row level security;
 alter table tasks enable row level security;
 alter table imports enable row level security;
 alter table imported_records enable row level security;
+alter table source_documents enable row level security;
+alter table document_chunks enable row level security;
 alter table assignments enable row level security;
 alter table settings enable row level security;
 alter table agent_runs enable row level security;
@@ -423,6 +491,20 @@ drop policy if exists "members can read imported records" on imported_records;
 create policy "members can read imported records" on imported_records for select to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()));
 drop policy if exists "managers can write imported records" on imported_records;
 create policy "managers can write imported records" on imported_records for all to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage()) with check (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage());
+
+drop policy if exists "service role can manage source documents" on source_documents;
+create policy "service role can manage source documents" on source_documents for all to service_role using (true) with check (true);
+drop policy if exists "members can read source documents" on source_documents;
+create policy "members can read source documents" on source_documents for select to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()));
+drop policy if exists "managers can write source documents" on source_documents;
+create policy "managers can write source documents" on source_documents for all to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage()) with check (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage());
+
+drop policy if exists "service role can manage document chunks" on document_chunks;
+create policy "service role can manage document chunks" on document_chunks for all to service_role using (true) with check (true);
+drop policy if exists "members can read document chunks" on document_chunks;
+create policy "members can read document chunks" on document_chunks for select to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()));
+drop policy if exists "managers can write document chunks" on document_chunks;
+create policy "managers can write document chunks" on document_chunks for all to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage()) with check (organization_id in (select organization_id from workmatch_current_organization_ids()) and workmatch_can_manage());
 
 drop policy if exists "members can read assignments" on assignments;
 create policy "members can read assignments" on assignments for select to authenticated using (organization_id in (select organization_id from workmatch_current_organization_ids()));
